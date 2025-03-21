@@ -1,0 +1,23 @@
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\SQL APEX.exe.config
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\SQL APEX.exe
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\SQL APEX.pdb
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\EntityFramework.dll
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\System.Data.SQLite.dll
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\System.Data.SQLite.EF6.dll
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\System.Data.SQLite.Linq.dll
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\EntityFramework.xml
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\bin\Debug\System.Data.SQLite.xml
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.csproj.AssemblyReference.cache
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\MainWindow.baml
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\MainWindow.g.cs
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\App.g.cs
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX_MarkupCompile.cache
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.g.resources
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL_APEX.Properties.Resources.resources
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.csproj.GenerateResource.cache
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.csproj.CoreCompileInputs.cache
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.csproj.Up2Date
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.exe
+C:\Users\ifoa\Desktop\SQL APEX\SQL APEX\obj\Debug\SQL APEX.pdb

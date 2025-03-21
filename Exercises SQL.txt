@@ -1,0 +1,6 @@
+ok -check that roles and abilities datagrids update and insert values into the database with the update button
+-in characters datagrid, change the DataGridTextColumns to DataGridComboBoxColumn and similar for the various values (for example: Role should be a ComboBox)
+ok -create more tables to give more information about the abilities (for example: mana cost, effect, cooldown, damage value or multipliers, and everything else comes to mind)
+ok -create a "team" table, where you can put max 5 characters in each row, and each team must have 2 Assault characters, 1 Defense character, 1 Support (new role) character, and 1 "Jungler" (or whatever you want) character
+ok -in roles table, add more columns to give more information about the role (for example: defender takes 50% extra damage from other players, assault has faster weapon recharge time, and whatever sparks your imagination)
+-add images and gifs or whatever you want, and try to see if you can put them inside the table or show them when you select the corresponding row in Datagrid

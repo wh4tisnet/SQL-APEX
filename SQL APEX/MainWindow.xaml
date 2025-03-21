@@ -1,0 +1,26 @@
+﻿<Window x:Class="apexlegends.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <TabControl Name="tabCont" Margin="0,0,0,110">
+            <TabItem Header="Characters">
+                <DataGrid x:Name="DBLiteCharacters" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteCharacters_InitializingNewItem"/>
+            </TabItem>
+            <TabItem Header="Abilities">
+                <DataGrid x:Name="DBLiteAbilities" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False"/>
+            </TabItem>
+            <TabItem Header="Roles">
+                <DataGrid x:Name="DBLiteRoles" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False"/>
+            </TabItem>
+            <TabItem Header="Team">
+                <DataGrid x:Name="DBLiteTeam" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteTeam_InitializingNewItem"/>
+            </TabItem>
+            <TabItem Header="CharactersAbilities">
+                <DataGrid x:Name="DBLiteCharactersAbilities" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteCharactersAbilities_InitializingNewItem"/>
+            </TabItem>
+        </TabControl>
+
+        <Button Content="Update" Click="UpdateButton_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="100" Height="30" Margin="645,0,0,39"/>
+    </Grid>
+</Window>
