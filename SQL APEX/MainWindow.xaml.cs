@@ -1,25 +1,34 @@
-﻿using System;
+using Microsoft.Win32;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace apexlegends
 {
     public partial class MainWindow : Window
     {
-        private string connectionString = @"Data Source=C:\Users\ifoa\Downloads\sql-main\sql-main\bsLite.db;Version=3;";
+        private string connectionString = @"Data Source=C:\Users\abel.alvarez\Desktop\bsLite.db";
+        private string CharacterImage = string.Empty;
 
         public MainWindow()
         {
             InitializeComponent();
             LoadData();
+            LoadTeams();
             DBLiteCharacters.InitializingNewItem += DBLiteCharacters_InitializingNewItem;
             DBLiteAbilities.InitializingNewItem += DBLiteAbilities_InitializingNewItem;
             DBLiteRoles.InitializingNewItem += DBLiteRoles_InitializingNewItem;
             DBLiteTeam.InitializingNewItem += DBLiteTeam_InitializingNewItem;
             DBLiteCharactersAbilities.InitializingNewItem += DBLiteCharactersAbilities_InitializingNewItem;
+            DBLiteTeamRoster.InitializingNewItem += DBLiteTeamRoster_InitializingNewItem;
         }
 
         private void LoadData()
@@ -30,7 +39,7 @@ namespace apexlegends
                 {
                     connection.Open();
 
-                    SQLiteCommand command = new SQLiteCommand("SELECT * FROM characters", connection);
+                    SQLiteCommand command = new SQLiteCommand("SELECT *, case when CharacterImage is not null then 'Yes' else 'No(upload)' end as IsImageUploaded FROM characters", connection);
                     SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
                     DataTable dtChar = new DataTable();
                     dataAdapter.Fill(dtChar);
@@ -59,12 +68,165 @@ namespace apexlegends
                     DataTable dtCharAbil = new DataTable();
                     dataAdapter.Fill(dtCharAbil);
                     DBLiteCharactersAbilities.ItemsSource = dtCharAbil.DefaultView;
+
+                    command = new SQLiteCommand("SELECT * FROM teamcharacters", connection);
+                    dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtTeamChar = new DataTable();
+                    dataAdapter.Fill(dtTeamChar);
+                    DBLiteTeamCharacters.ItemsSource = dtTeamChar.DefaultView;
+
+                    command = new SQLiteCommand("SELECT * FROM teamroster", connection);
+                    dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtTeamRoster = new DataTable();
+                    dataAdapter.Fill(dtTeamRoster);
+                    DBLiteTeamRoster.ItemsSource = dtTeamRoster.DefaultView;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error connecting to SQLite database: " + ex.Message);
                 }
             }
+        }
+
+        private void LoadTeams()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand("SELECT id, teamname FROM team", connection);
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtTeams = new DataTable();
+                    dataAdapter.Fill(dtTeams);
+
+                    ComboBoxTeam.ItemsSource = dtTeams.DefaultView;
+                    ComboBoxTeam.SelectedValuePath = "id";
+                    ComboBoxTeam.DisplayMemberPath = "teamname";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading teams: " + ex.Message);
+                }
+            }
+        }
+
+        private void ComboBoxTeam_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboBoxTeam.SelectedItem != null)
+            {
+                int selectedTeam = int.Parse(ComboBoxTeam.SelectedValue.ToString());
+                LoadTeamRoster(selectedTeam);
+            }
+        }
+
+        private void LoadTeamRoster(int teamid)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand($@"SELECT c.id AS CharacterId, c.name AS CharacterName, r.rolename as CharacterRole
+                                                        FROM teamcharacters tc
+                                                        JOIN characters c ON tc.idCharacters = c.id
+                                                        JOIN team t ON tc.idTeam = t.id
+                                                        left JOIN roles r on c.IdRole = r.Id
+                                                        WHERE tc.IdTeam = {teamid}", connection);
+
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtTeamRoster = new DataTable();
+                    dataAdapter.Fill(dtTeamRoster);
+
+                    DBLiteTeamRoster.ItemsSource = dtTeamRoster.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading team roster: " + ex.Message);
+                }
+            }
+        }
+
+
+
+        private void SelectImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Images (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
+
+            var selectedRow = DBLiteCharacters.SelectedItem as DataRowView;
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                CharacterImage = openFileDialog.FileName;
+                MessageBox.Show("Image selected: " + CharacterImage);
+
+                string base64String = Convert.ToBase64String(ConvertImageToBytes(CharacterImage));
+
+                if (selectedRow != null)
+                {
+                    selectedRow["CharacterImage"] = base64String;
+                    UpdateCharacterImage(selectedRow);
+                }
+            }
+            else if (selectedRow != null)
+            {
+                selectedRow["CharacterImage"] = DBNull.Value;
+                imgCharacter.Source = null;
+            }
+        }
+
+        private void DBLiteCharacters_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedRow = DBLiteCharacters.SelectedItem as DataRowView;
+
+            if (selectedRow != null)
+            {
+                UpdateCharacterImage(selectedRow);
+            }
+        }
+
+        private void UpdateCharacterImage(DataRowView selectedRow)
+        {
+            string imageBytes = selectedRow["CharacterImage"] as string;
+
+            if (string.IsNullOrEmpty(imageBytes))
+            {
+                imgCharacter.Source = null;
+            }
+            else
+            {
+                byte[] byteArray = Convert.FromBase64String(imageBytes);
+                imgCharacter.Source = LoadImageFromBytes(byteArray);
+            }
+        }
+
+        private byte[] ConvertImageToBytes(string imagePath)
+        {
+            try
+            {
+                return File.ReadAllBytes(imagePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error reading image: " + ex.Message);
+                return null;
+            }
+        }
+
+        private BitmapImage LoadImageFromBytes(byte[] imageBytes)
+        {
+            var bitmapImage = new BitmapImage();
+            using (MemoryStream stream = new MemoryStream(imageBytes))
+            {
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = stream;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+            }
+            return bitmapImage;
         }
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
@@ -88,6 +250,14 @@ namespace apexlegends
             else if (tabCont.SelectedIndex == 4)
             {
                 UpdateDataGrid("charactersabilities");
+            }
+            else if (tabCont.SelectedIndex == 5)
+            {
+                UpdateDataGrid("teamcharacters");
+            }
+            else if (tabCont.SelectedIndex == 6)
+            {
+                UpdateDataGrid("teamroster");
             }
             else
             {
@@ -139,6 +309,8 @@ namespace apexlegends
             if (tableName == "abilities") return DBLiteAbilities;
             if (tableName == "roles") return DBLiteRoles;
             if (tableName == "team") return DBLiteTeam;
+            if (tableName == "teamcharacters") return DBLiteTeamCharacters;
+            if (tableName == "teamroster") return DBLiteTeamRoster;
             return DBLiteCharactersAbilities;
         }
 
@@ -189,9 +361,9 @@ namespace apexlegends
                 insertQuery = insertQuery.Substring(0, insertQuery.Length - 2);
             }
 
-            insertQuery += ", lastUpdateDate , lastUpdateWho ";
+            insertQuery += ", lastUpdateDate , lastUpdateWho) ";
 
-            insertQuery += ") VALUES (";
+            insertQuery += "VALUES (";
 
             foreach (var columnName in columnNames)
             {
@@ -207,9 +379,7 @@ namespace apexlegends
                 insertQuery = insertQuery.Substring(0, insertQuery.Length - 2);
             }
 
-            insertQuery += ", '" + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + "', '" + Environment.UserName + "'";
-
-            insertQuery += ")";
+            insertQuery += ", '" + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + "', '" + Environment.UserName + "');";
 
             return insertQuery;
         }
@@ -286,14 +456,15 @@ namespace apexlegends
             return nextId;
         }
 
-        private int GetNextIdTeam()
+        private int GetNextIdTeamRoster()
         {
-            return GetNextId("team");
+            return GetNextId("teamroster");
         }
 
-        private int GetNextIdCharactersAbilities()
+        private void DBLiteTeamRoster_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
         {
-            return GetNextId("charactersabilities");
+            DataRowView newItem = (DataRowView)e.NewItem;
+            newItem.Row["Id"] = GetNextIdTeamRoster();
         }
 
         private void DBLiteCharacters_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
@@ -317,13 +488,21 @@ namespace apexlegends
         private void DBLiteTeam_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
         {
             DataRowView newItem = (DataRowView)e.NewItem;
-            newItem.Row["Id"] = GetNextIdTeam();
+            newItem.Row["Id"] = GetNextId("team");
         }
 
         private void DBLiteCharactersAbilities_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
         {
             DataRowView newItem = (DataRowView)e.NewItem;
-            newItem.Row["Id"] = GetNextIdCharactersAbilities();
+            newItem.Row["Id"] = GetNextId("charactersabilities");
+        }
+
+        private void DBLiteTeamCharacters_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
+        {
+            DataRowView newItem = (DataRowView)e.NewItem;
+            newItem.Row["Id"] = GetNextId("teamcharacters");
         }
     }
+}
+
 }
