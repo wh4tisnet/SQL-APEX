@@ -11,14 +11,14 @@
                         <ColumnDefinition Width="19*"/>
                         <ColumnDefinition Width="349*"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid x:Name="DBLiteCharacters" AutoGenerateColumns="False" IsReadOnly="False" SelectionChanged="DBLiteCharacters_SelectionChanged" Margin="0,0,258,0" Grid.ColumnSpan="3">
+                    <DataGrid x:Name="DBLiteCharacters" AutoGenerateColumns="False" IsReadOnly="False" SelectionChanged="DBLiteCharacters_SelectionChanged" Margin="0,0,331,0" Grid.ColumnSpan="3">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Character Name" Binding="{Binding name}" />
                             <DataGridTextColumn Header="Character Description" Binding="{Binding description}" />
                             <DataGridTextColumn Header="Is image uploaded?" Binding="{Binding IsImageUploaded}" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Image Name="imgCharacter" Margin="102,28,7,59" Grid.Column="2"/>
+                    <Image Name="imgCharacter" Margin="102,28,7,59" Grid.Column="2" Source="{Binding Path=CharacterImage}" />
                 </Grid>
             </TabItem>
             <TabItem Header="Abilities">
@@ -31,7 +31,12 @@
                 <DataGrid x:Name="DBLiteTeam" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteTeam_InitializingNewItem"/>
             </TabItem>
             <TabItem Header="CharactersAbilities">
-                <DataGrid x:Name="DBLiteCharactersAbilities" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteCharactersAbilities_InitializingNewItem"/>
+                <DataGrid x:Name="DBLiteCharactersAbilities" AutoGenerateColumns="False" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" InitializingNewItem="DBLiteCharactersAbilities_InitializingNewItem">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Character Name" Binding="{Binding CharacterName}"/>
+                        <DataGridTextColumn Header="Ability Name" Binding="{Binding AbilityName}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </TabItem>
             <TabItem Header="TeamCharacters">
                 <Grid>
@@ -40,7 +45,7 @@
             </TabItem>
             <TabItem Header="TeamRoster">
                 <Grid>
-                    <DataGrid x:Name="DBLiteTeamRoster" AutoGenerateColumns="False" IsReadOnly="True" InitializingNewItem="DBLiteTeamRoster_InitializingNewItem" Height="187" Margin="10,46,0,0" HorizontalAlignment="Left" Width="697" VerticalAlignment="Top">
+                    <DataGrid x:Name="DBLiteTeamRoster" AutoGenerateColumns="False" IsReadOnly="True" InitializingNewItem="DBLiteTeamRoster_InitializingNewItem" SelectionChanged="DBLiteTeamRoster_SelectionChanged"  Height="187" Margin="10,46,0,0" HorizontalAlignment="Left" Width="451" VerticalAlignment="Top">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Character Name" Binding="{Binding CharacterName}"/>
                             <DataGridTextColumn Header="Role" Binding="{Binding rolename}"/>
@@ -48,13 +53,19 @@
                             <DataGridTextColumn Header="Role ID" Binding="{Binding IdRole}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-
+                    <Grid>
+                        <DataGrid x:Name="DBLiteOpenThen" AutoGenerateColumns="False" IsReadOnly="True" InitializingNewItem="DBLiteTeamRoster_InitializingNewItem" Height="187" Margin="499,70,0,0" HorizontalAlignment="Left" Width="279" VerticalAlignment="Top">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Ability Name" Binding="{Binding AbilityName}"/>
+                                <DataGridTextColumn Header="Ability Description" Binding="{Binding AbilityDescription}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                     <ComboBox x:Name="ComboBoxTeam" HorizontalAlignment="Left" Margin="93,10,0,0" VerticalAlignment="Top" Width="273" Height="26" SelectionChanged="ComboBoxTeam_SelectionChanged"/>
                     <Label x:Name="LabelTeamInfo" Content="Select Team: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
         </TabControl>
-
         <Button Content="Select Image" Click="SelectImageButton_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" Height="30" Margin="65,0,0,39"/>
         <Button Content="Update" Click="UpdateButton_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="100" Height="30" Margin="645,0,0,39"/>
     </Grid>
