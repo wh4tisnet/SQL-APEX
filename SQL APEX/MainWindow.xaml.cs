@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -21,10 +22,12 @@ namespace apexlegends
         public MainWindow()
         {
             InitializeComponent();
-            LoadData();
+            
             LoadTeams();
             LoadCharacterAbilities();
-            LoadAbilities();
+            LoadCharacters();
+            LoadRoles();
+            LoadData();
 
             DBLiteCharacters.InitializingNewItem += DBLiteCharacters_InitializingNewItem;
             DBLiteAbilities.InitializingNewItem += DBLiteAbilities_InitializingNewItem;
@@ -48,11 +51,7 @@ namespace apexlegends
                     dataAdapter.Fill(dtChar);
                     DBLiteCharacters.ItemsSource = dtChar.DefaultView;
 
-                    command = new SQLiteCommand("SELECT * FROM abilities", connection);
-                    dataAdapter = new SQLiteDataAdapter(command);
-                    DataTable dtAbil = new DataTable();
-                    dataAdapter.Fill(dtAbil);
-                    DBLiteAbilities.ItemsSource = dtAbil.DefaultView;
+                    LoadAbilities();
 
                     command = new SQLiteCommand("SELECT * FROM roles", connection);
                     dataAdapter = new SQLiteDataAdapter(command);
@@ -218,7 +217,7 @@ namespace apexlegends
             }
         }
 
-        private void LoadAbilities()
+        private void LoadCharacters()
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -227,20 +226,84 @@ namespace apexlegends
                     connection.Open();
 
                     SQLiteCommand command = new SQLiteCommand($@"
-                                                        SELECT ca.Character_Id, 
-                                                        c.name AS CharacterName, 
-                                                        ca.Ability_Id, 
-                                                        a.abilityname AS AbilityName,
-                                                        a.abilitydescription AS AbilityDescription
-                                                        FROM charactersabilities ca
-                                                        JOIN characters c ON ca.Character_Id = c.id
-                                                        JOIN abilities a ON ca.Ability_Id = a.id", connection);
+                                                        SELECT c.id AS CharacterId, 
+                                                               c.name AS name, 
+                                                               c.description AS description, 
+                                                               r.rolename AS IdRole,
+                                                               c.CharacterImage
+                                                        FROM characters c
+                                                        LEFT JOIN roles r ON c.IdRole = r.id", connection);
+
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtCharacters = new DataTable();
+                    dataAdapter.Fill(dtCharacters);
+
+                    DBLiteCharacters.ItemsSource = dtCharacters.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading characters: " + ex.Message);
+                }
+            }
+        }
+
+        private void LoadRoles()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand("SELECT id, rolename FROM roles", connection);
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtRoles = new DataTable();
+                    dataAdapter.Fill(dtRoles);
+
+                    RolesComboBox.ItemsSource = dtRoles.DefaultView;
+                    RolesComboBox.DisplayMemberPath = "rolename";
+                    RolesComboBox.SelectedValuePath = "id";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading roles: " + ex.Message);
+                }
+            }
+        }
+
+
+        private void LoadAbilities()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand(@"
+                SELECT a.id AS id, 
+                       a.abilityname AS AbilityName,
+                       a.abilitydescription AS AbilityDescription,
+                       a.abilitytype AS AbilityType
+                FROM abilities a", connection);
 
                     SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
                     DataTable dtAbilities = new DataTable();
                     dataAdapter.Fill(dtAbilities);
 
-                    DBLiteOpenThen.ItemsSource = dtAbilities.DefaultView;
+                    DBLiteAbilities.ItemsSource = dtAbilities.DefaultView;
+
+                    SQLiteCommand typeCommand = new SQLiteCommand(@"
+                SELECT DISTINCT a.abilitytype
+                FROM abilities a", connection);
+
+                    SQLiteDataAdapter typeAdapter = new SQLiteDataAdapter(typeCommand);
+                    DataTable dtAbilityTypes = new DataTable();
+                    typeAdapter.Fill(dtAbilityTypes);
+
+                    ComboBoxAbilityType.ItemsSource = dtAbilityTypes.AsEnumerable()
+                                                                   .Select(row => row.Field<string>("abilitytype"))
+                                                                   .ToList();
                 }
                 catch (Exception ex)
                 {
@@ -279,8 +342,10 @@ namespace apexlegends
 
         private void DBLiteCharacters_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedRow = DBLiteCharacters.SelectedItem as DataRowView;
+            imgCharacter.Source = null;
 
+            var selectedRow = DBLiteCharacters.SelectedItem as DataRowView;
+           
             if (selectedRow != null)
             {
                 UpdateCharacterImage(selectedRow);
@@ -291,12 +356,8 @@ namespace apexlegends
         {
             string imageBytes = selectedRow["CharacterImage"] as string;
 
-            if (string.IsNullOrEmpty(imageBytes))
-            {
-                imgCharacter.Source = null;
-            }
-            else
-            {
+            if (!string.IsNullOrEmpty(imageBytes))
+            {             
                 byte[] byteArray = Convert.FromBase64String(imageBytes);
                 imgCharacter.Source = LoadImageFromBytes(byteArray);
             }
@@ -602,7 +663,4 @@ namespace apexlegends
             newItem.Row["Id"] = GetNextId("teamcharacters");
         }
     }
-}
-
-
 }
