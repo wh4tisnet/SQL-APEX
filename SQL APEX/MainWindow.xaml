@@ -65,7 +65,12 @@
             </TabItem>
             <TabItem Header="TeamCharacters">
                 <Grid>
-                    <DataGrid x:Name="DBLiteTeamCharacters" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="True" IsReadOnly="False" InitializingNewItem="DBLiteTeamCharacters_InitializingNewItem"/>
+                    <DataGrid x:Name="DBLiteTeamCharacters" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False" IsReadOnly="False" InitializingNewItem="DBLiteTeamCharacters_InitializingNewItem">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Team ID" Binding="{Binding idTeam}"/>
+                            <DataGridTextColumn Header="Character ID" Binding="{Binding idCharacters}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
             <TabItem Header="TeamRoster">
