@@ -23,6 +23,9 @@ namespace apexlegends
             InitializeComponent();
             LoadData();
             LoadTeams();
+            LoadCharacterAbilities();
+            LoadAbilities();
+
             DBLiteCharacters.InitializingNewItem += DBLiteCharacters_InitializingNewItem;
             DBLiteAbilities.InitializingNewItem += DBLiteAbilities_InitializingNewItem;
             DBLiteRoles.InitializingNewItem += DBLiteRoles_InitializingNewItem;
@@ -149,6 +152,102 @@ namespace apexlegends
             }
         }
 
+        private void DBLiteTeamRoster_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DBLiteTeamRoster.SelectedItem != null)
+            {
+                DataRowView selectedRow = (DataRowView)DBLiteTeamRoster.SelectedItem;
+                int characterId = Convert.ToInt32(selectedRow["CharacterId"]);
+
+                LoadCharacterAbilitiesForSelectedCharacter(characterId);
+            }
+        }
+
+        private void LoadCharacterAbilitiesForSelectedCharacter(int characterId)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand($@"
+                                                        SELECT a.abilityname AS AbilityName,
+                                                               a.abilitydescription AS AbilityDescription
+                                                        FROM charactersabilities ca
+                                                        JOIN abilities a ON ca.Ability_Id = a.id
+                                                        WHERE ca.Character_Id = {characterId}", connection);
+
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtCharacterAbilities = new DataTable();
+                    dataAdapter.Fill(dtCharacterAbilities);
+
+                    DBLiteOpenThen.ItemsSource = dtCharacterAbilities.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading character abilities: " + ex.Message);
+                }
+            }
+        }
+
+        private void LoadCharacterAbilities()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand($@"
+                                                        SELECT ca.Character_Id, c.name AS CharacterName, ca.Ability_Id, a.abilityname AS AbilityName
+                                                        FROM charactersabilities ca
+                                                        JOIN characters c ON ca.Character_Id = c.id
+                                                        JOIN abilities a ON ca.ability_Id = a.id", connection);
+
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtCharAbil = new DataTable();
+                    dataAdapter.Fill(dtCharAbil);
+
+                    DBLiteCharactersAbilities.ItemsSource = dtCharAbil.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading character abilities: " + ex.Message);
+                }
+            }
+        }
+
+        private void LoadAbilities()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    SQLiteCommand command = new SQLiteCommand($@"
+                                                        SELECT ca.Character_Id, 
+                                                        c.name AS CharacterName, 
+                                                        ca.Ability_Id, 
+                                                        a.abilityname AS AbilityName,
+                                                        a.abilitydescription AS AbilityDescription
+                                                        FROM charactersabilities ca
+                                                        JOIN characters c ON ca.Character_Id = c.id
+                                                        JOIN abilities a ON ca.Ability_Id = a.id", connection);
+
+                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                    DataTable dtAbilities = new DataTable();
+                    dataAdapter.Fill(dtAbilities);
+
+                    DBLiteOpenThen.ItemsSource = dtAbilities.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading abilities: " + ex.Message);
+                }
+            }
+        }
 
 
         private void SelectImageButton_Click(object sender, RoutedEventArgs e)
@@ -504,5 +603,6 @@ namespace apexlegends
         }
     }
 }
+
 
 }
